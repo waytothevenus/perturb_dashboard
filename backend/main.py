@@ -13,7 +13,8 @@ from data_store import DataStore
 from log_parser import LogParser
 from wandb_fetcher import fetch_new_lines_wandb, fetch_new_lines_local
 
-load_dotenv()
+# Load .env from the same directory as this file so it works regardless of cwd
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(name)s | %(levelname)s | %(message)s")
 logger = logging.getLogger(__name__)
