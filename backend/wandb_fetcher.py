@@ -17,11 +17,16 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-ENTITY  = os.environ.get("WANDB_ENTITY",  "perturb-ai")
-PROJECT = os.environ.get("WANDB_PROJECT", "perturb-validator")
-RUN_ID  = os.environ.get("WANDB_RUN_ID",  "dk9ms8qo")
-
 _PAGE_SIZE = 500
+
+
+def _wandb_config() -> tuple:
+    """Read WandB config at call time so .env loading order doesn't matter."""
+    return (
+        os.environ.get("WANDB_ENTITY",  "perturb-ai"),
+        os.environ.get("WANDB_PROJECT", "perturb-validator"),
+        os.environ.get("WANDB_RUN_ID",  "dk9ms8qo"),
+    )
 
 _LOG_LINES_QUERY = """
 query RunLogLines($entity: String!, $project: String!, $run: String!, $after: String, $first: Int) {
@@ -42,15 +47,16 @@ def _gql_page(api_key: str, after: Optional[str] = None) -> tuple:
     """Fetch one page of log lines.
     Returns (lines, has_next, end_cursor, total).
     """
+    entity, project, run_id = _wandb_config()
     creds = base64.b64encode(f"api:{api_key}".encode()).decode()
     headers = {
         "Authorization": f"Basic {creds}",
         "Content-Type": "application/json",
     }
     variables = {
-        "entity":  ENTITY,
-        "project": PROJECT,
-        "run":     RUN_ID,
+        "entity":  entity,
+        "project": project,
+        "run":     run_id,
         "first":   _PAGE_SIZE,
         "after":   after,
     }
@@ -66,7 +72,12 @@ def _gql_page(api_key: str, after: Optional[str] = None) -> tuple:
     if "errors" in data:
         raise RuntimeError(f"GraphQL errors: {data['errors']}")
 
-    run_data   = data["data"]["project"]["run"]
+    project_data = data.get("data", {}).get("project")
+    if project_data is None:
+        raise RuntimeError(f"WandB project not found: {entity}/{project}")
+    run_data = project_data.get("run")
+    if run_data is None:
+        raise RuntimeError(f"WandB run not found: {entity}/{project}/{run_id}")
     total      = run_data.get("logLineCount", 0)
     ll         = run_data.get("logLines", {})
     pi         = ll.get("pageInfo", {})

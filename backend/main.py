@@ -5,6 +5,11 @@ from contextlib import asynccontextmanager
 from typing import Set
 
 from dotenv import load_dotenv
+
+# Load .env BEFORE importing modules that read env vars at import time
+# (wandb_fetcher captures WANDB_ENTITY/PROJECT/RUN_ID at module load).
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,9 +17,6 @@ from fastapi.responses import JSONResponse
 from data_store import DataStore
 from log_parser import LogParser
 from wandb_fetcher import fetch_new_lines_wandb, fetch_new_lines_local
-
-# Load .env from the same directory as this file so it works regardless of cwd
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(name)s | %(levelname)s | %(message)s")
 logger = logging.getLogger(__name__)
