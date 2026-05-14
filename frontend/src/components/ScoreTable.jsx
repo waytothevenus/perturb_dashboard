@@ -59,8 +59,8 @@ const COLUMNS = [
 
 export default function ScoreTable({ scores }) {
   const [expandedIdx, setExpandedIdx] = useState(null)
-  const [sortKey, setSortKey] = useState('index')
-  const [sortDir, setSortDir] = useState('asc')
+  const [sortKey, setSortKey] = useState('timestamp')
+  const [sortDir, setSortDir] = useState('desc')
 
   const handleSort = (key) => {
     if (key === 'expand' || key === 'index') return
