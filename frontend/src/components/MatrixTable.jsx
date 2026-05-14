@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { Search, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react'
+import { toTokyoTime } from '../utils/time.js'
 
 // UID col: 80px, Avg col: 64px, Latest col: 64px
 const COL_UID_W    = 80
@@ -242,7 +243,7 @@ export default function MatrixTable({ matrixData, onSelectMiner }) {
               </p>
             )}
             {tooltip.slot.timestamp && (
-              <p className="text-slate-500 font-mono text-[10px] mt-1">{tooltip.slot.timestamp}</p>
+              <p className="text-slate-500 font-mono text-[10px] mt-1">{toTokyoTime(tooltip.slot.timestamp)}</p>
             )}
             {tooltip.slot.task_id && (
               <p className="text-slate-600 font-mono text-[9px] truncate max-w-[190px] mt-0.5">

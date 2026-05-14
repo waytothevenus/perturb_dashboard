@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, ChevronRight } from 'lucide-react'
+import { toTokyoTime } from '../utils/time.js'
 
 function scoreColor(s) {
   if (s >= 0.7) return 'text-green-400'
@@ -116,7 +117,7 @@ export default function ScoreTable({ scores }) {
                 onClick={() => setExpandedIdx(isExpanded ? null : rowIdx)}
               >
                 <td className="py-2 px-2 text-slate-500">{entry.index}</td>
-                <td className="py-2 px-2 font-mono text-slate-300 whitespace-nowrap">{entry.timestamp}</td>
+                <td className="py-2 px-2 font-mono text-slate-300 whitespace-nowrap">{toTokyoTime(entry.timestamp)}</td>
                 <td className={`py-2 px-2 font-mono font-bold ${scoreColor(entry.score ?? 0)}`}>
                   {entry.score?.toFixed(6)}
                 </td>

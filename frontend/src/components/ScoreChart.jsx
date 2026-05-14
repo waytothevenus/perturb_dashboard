@@ -2,6 +2,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, Legend, ResponsiveContainer,
 } from 'recharts'
+import { toTokyoTime } from '../utils/time.js'
 
 const METRIC_COLORS = {
   score: '#06b6d4',
@@ -17,7 +18,7 @@ function CustomTooltip({ active, payload, label }) {
   if (!d) return null
   return (
     <div className="bg-slate-800 border border-slate-600 rounded-lg p-3 text-xs shadow-xl min-w-[200px]">
-      <p className="text-slate-400 mb-2 font-mono">{d.timestamp}</p>
+      <p className="text-slate-400 mb-2 font-mono">{toTokyoTime(d.timestamp)}</p>
       <div className="space-y-1">
         <p><span className="text-cyan-400">Score</span>: <span className="text-white font-bold">{d.score?.toFixed(6)}</span></p>
         <p><span className="text-purple-400">Norm</span>: {d.norm?.toFixed(6)}</p>

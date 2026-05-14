@@ -3,6 +3,7 @@ import MinerDetail from './MinerDetail.jsx'
 import MatrixTable from './MatrixTable.jsx'
 import StatsBar from './StatsBar.jsx'
 import { Activity, Users, LayoutGrid } from 'lucide-react'
+import { nowTokyoTime } from '../utils/time.js'
 import { useState } from 'react'
 
 export default function Dashboard({
@@ -44,7 +45,7 @@ export default function Dashboard({
             <span className="text-slate-400">{isConnected ? 'Live' : 'Reconnecting…'}</span>
             {lastUpdate && (
               <span className="text-slate-500">
-                · {lastUpdate.toLocaleTimeString()}
+                · {nowTokyoTime(lastUpdate)}
               </span>
             )}
           </div>
