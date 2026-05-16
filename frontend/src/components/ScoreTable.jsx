@@ -22,8 +22,10 @@ function DetailRow({ label, value, mono = true, color }) {
 function ExpandedRow({ entry }) {
   return (
     <tr className="bg-slate-800/80">
-      <td colSpan={10} className="px-4 pb-3 pt-1">
+      <td colSpan={11} className="px-4 pb-3 pt-1">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-6 gap-y-0.5 border-l-2 border-cyan-500/40 pl-4 mt-1">
+          <DetailRow label="Category" value={entry.category ?? '—'} color="text-cyan-300" />
+          <DetailRow label="Output Label" value={entry.output_label ?? '—'} color="text-yellow-300" />
           <DetailRow label="Task ID" value={entry.task_id} />
           <DetailRow
             label="Response Time"
@@ -47,6 +49,7 @@ function ExpandedRow({ entry }) {
 const COLUMNS = [
   { key: 'index', label: '#', sortKey: 'index' },
   { key: 'timestamp', label: 'Timestamp', sortKey: 'timestamp' },
+  { key: 'category', label: 'Category', sortKey: 'category' },
   { key: 'score', label: 'Score', sortKey: 'score' },
   { key: 'norm', label: 'Norm', sortKey: 'norm' },
   { key: 'reason', label: 'Reason', sortKey: 'reason' },
@@ -57,7 +60,7 @@ const COLUMNS = [
   { key: 'expand', label: '' },
 ]
 
-export default function ScoreTable({ scores }) {
+export default function ScoreTable({ scores, pageOffset = 0 }) {
   const [expandedIdx, setExpandedIdx] = useState(null)
   const [sortKey, setSortKey] = useState('timestamp')
   const [sortDir, setSortDir] = useState('desc')
@@ -73,8 +76,8 @@ export default function ScoreTable({ scores }) {
     setExpandedIdx(null)
   }
 
-  // Build rows with original index
-  const rows = scores.map((s, i) => ({ ...s, index: i + 1 }))
+  // Build rows with absolute index across pages
+  const rows = scores.map((s, i) => ({ ...s, index: pageOffset + i + 1 }))
 
   const sorted = [...rows].sort((a, b) => {
     const av = a[sortKey] ?? ''
@@ -118,6 +121,9 @@ export default function ScoreTable({ scores }) {
               >
                 <td className="py-2 px-2 text-slate-500">{entry.index}</td>
                 <td className="py-2 px-2 font-mono text-slate-300 whitespace-nowrap">{toTokyoTime(entry.timestamp)}</td>
+                <td className="py-2 px-2 text-cyan-300 font-mono text-xs max-w-[100px] truncate" title={entry.category ?? ''}>
+                  {entry.category ?? <span className="text-slate-600">—</span>}
+                </td>
                 <td className={`py-2 px-2 font-mono font-bold ${scoreColor(entry.score ?? 0)}`}>
                   {entry.score?.toFixed(6)}
                 </td>

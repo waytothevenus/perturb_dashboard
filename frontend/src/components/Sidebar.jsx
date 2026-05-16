@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search } from 'lucide-react'
+import { Search, Trophy } from 'lucide-react'
 
 function scoreColor(score) {
   if (score >= 0.7) return 'text-green-400'
@@ -13,7 +13,7 @@ function scoreBg(score) {
   return 'bg-red-500'
 }
 
-function MinerRow({ miner, selected, onSelect }) {
+function MinerRow({ miner, selected, onSelect, rank }) {
   const score = miner.latest_score ?? 0
   const barW = Math.max(2, Math.round(score * 100))
 
@@ -27,7 +27,14 @@ function MinerRow({ miner, selected, onSelect }) {
         }`}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-sm font-mono font-semibold text-white">UID {miner.uid}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-mono font-semibold text-white">UID {miner.uid}</span>
+          {rank != null && (
+            rank === 1
+              ? <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-yellow-400"><Trophy size={9} />1</span>
+              : <span className="text-[10px] text-slate-500 font-mono">#{rank}</span>
+          )}
+        </div>
         <span className={`text-xs font-mono font-bold ${scoreColor(score)}`}>
           {score.toFixed(6)}
         </span>
@@ -57,7 +64,7 @@ function MinerRow({ miner, selected, onSelect }) {
   )
 }
 
-export default function Sidebar({ miners, selectedUid, onSelect }) {
+export default function Sidebar({ miners, selectedUid, onSelect, rankingMap = {} }) {
   const [filter, setFilter] = useState('')
 
   const visible = (filter === ''
@@ -94,6 +101,7 @@ export default function Sidebar({ miners, selectedUid, onSelect }) {
               miner={m}
               selected={selectedUid === m.uid}
               onSelect={onSelect}
+              rank={rankingMap[m.uid] ?? null}
             />
           ))
         )}

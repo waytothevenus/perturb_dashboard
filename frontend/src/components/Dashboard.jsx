@@ -1,10 +1,12 @@
 import Sidebar from './Sidebar.jsx'
 import MinerDetail from './MinerDetail.jsx'
 import MatrixTable from './MatrixTable.jsx'
+import RankingTable from './RankingTable.jsx'
+import TaskDistribution from './TaskDistribution.jsx'
 import StatsBar from './StatsBar.jsx'
-import { Activity, Users, LayoutGrid } from 'lucide-react'
+import { Activity, Users, LayoutGrid, Settings, Trophy, BarChart2 } from 'lucide-react'
 import { nowTokyoTime } from '../utils/time.js'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 export default function Dashboard({
   minersSummary,
@@ -15,9 +17,20 @@ export default function Dashboard({
   onSelectMiner,
   isConnected,
   lastUpdate,
+  wandbConfig,
+  onOpenConfig,
+  rankingData,
+  taskDistribution,
+  onMinerPageChange,
 }) {
   const [activeTab, setActiveTab] = useState('miners')
   const selectedDetail = selectedUid !== null ? minersDetail[selectedUid] : null
+
+  // Build uid -> rank map from latest ranking snapshot
+  const rankingMap = useMemo(() => {
+    if (!rankingData?.entries) return {}
+    return Object.fromEntries(rankingData.entries.map(e => [e.uid, e.rank]))
+  }, [rankingData])
 
   // Clicking a miner in the matrix switches to the detail tab
   const handleSelectMiner = (uid) => {
@@ -34,9 +47,18 @@ export default function Dashboard({
           <h1 className="text-lg font-semibold tracking-wide text-white">
             Perturb Validator Dashboard
           </h1>
-          <span className="text-xs text-slate-400 font-mono">
-            perturb-ai / perturb-validator / dk9ms8qo
-          </span>
+          <button
+            onClick={onOpenConfig}
+            title="Configure WandB run"
+            className="flex items-center gap-1.5 text-xs text-slate-400 font-mono hover:text-cyan-400 transition-colors group"
+          >
+            <span>
+              {wandbConfig
+                ? `${wandbConfig.wandb_entity} / ${wandbConfig.wandb_project} / ${wandbConfig.wandb_run_id}`
+                : '…'}
+            </span>
+            <Settings size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
         </div>
         <div className="flex items-center gap-4">
           <StatsBar stats={overallStats} />
@@ -82,6 +104,38 @@ export default function Dashboard({
             </span>
           )}
         </button>
+        <button
+          onClick={() => setActiveTab('rankings')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm border-b-2 transition-colors ${
+            activeTab === 'rankings'
+              ? 'border-cyan-500 text-white'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Trophy size={14} />
+          Rankings
+          {rankingData?.entries?.length > 0 && (
+            <span className="text-[11px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded-full">
+              {rankingData.entries.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('tasks')}
+          className={`flex items-center gap-1.5 px-4 py-2.5 text-sm border-b-2 transition-colors ${
+            activeTab === 'tasks'
+              ? 'border-cyan-500 text-white'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <BarChart2 size={14} />
+          Tasks
+          {taskDistribution?.length > 0 && (
+            <span className="text-[11px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded-full">
+              {taskDistribution.length}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Body */}
@@ -91,6 +145,7 @@ export default function Dashboard({
             miners={minersSummary}
             selectedUid={selectedUid}
             onSelect={onSelectMiner}
+            rankingMap={rankingMap}
           />
           <main className="flex-1 overflow-auto bg-base p-4">
             {selectedUid === null ? (
@@ -99,7 +154,7 @@ export default function Dashboard({
                 <p className="text-lg">Select a miner to view details</p>
               </div>
             ) : selectedDetail ? (
-              <MinerDetail detail={selectedDetail} />
+              <MinerDetail detail={selectedDetail} onPageChange={(page) => onMinerPageChange(selectedUid, page)} />
             ) : (
               <div className="flex items-center justify-center h-full text-slate-500">
                 Loading miner {selectedUid}…
@@ -107,9 +162,17 @@ export default function Dashboard({
             )}
           </main>
         </div>
-      ) : (
+      ) : activeTab === 'matrix' ? (
         <div className="flex-1 overflow-hidden p-4">
           <MatrixTable matrixData={matrixData} onSelectMiner={handleSelectMiner} />
+        </div>
+      ) : activeTab === 'rankings' ? (
+        <div className="flex-1 overflow-hidden p-4">
+          <RankingTable rankingData={rankingData} onSelectMiner={handleSelectMiner} />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-hidden p-4">
+          <TaskDistribution taskDistribution={taskDistribution} />
         </div>
       )}
     </div>
